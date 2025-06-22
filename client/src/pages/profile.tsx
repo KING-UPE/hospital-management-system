@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
@@ -250,7 +251,7 @@ export default function ProfilePage() {
                             <Input
                               id="experience"
                               type="number"
-                              value={user.doctorInfo.experience}
+                              value={user.doctorInfo.experience?.toString() || "0"}
                               disabled={!isEditing}
                               className={!isEditing ? "bg-muted" : ""}
                             />
@@ -290,12 +291,30 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label htmlFor="bloodType">Blood Type</Label>
-                            <Input
-                              id="bloodType"
-                              value={user.patientInfo.bloodType || "Not specified"}
-                              disabled={!isEditing}
-                              className={!isEditing ? "bg-muted" : ""}
-                            />
+                            {isEditing ? (
+                              <Select defaultValue={user.patientInfo.bloodType || ""}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select blood type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="A+">A+</SelectItem>
+                                  <SelectItem value="A-">A-</SelectItem>
+                                  <SelectItem value="B+">B+</SelectItem>
+                                  <SelectItem value="B-">B-</SelectItem>
+                                  <SelectItem value="AB+">AB+</SelectItem>
+                                  <SelectItem value="AB-">AB-</SelectItem>
+                                  <SelectItem value="O+">O+</SelectItem>
+                                  <SelectItem value="O-">O-</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            ) : (
+                              <Input
+                                id="bloodType"
+                                value={user.patientInfo.bloodType || "Not specified"}
+                                disabled
+                                className="bg-muted"
+                              />
+                            )}
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="emergencyContact">Emergency Contact</Label>

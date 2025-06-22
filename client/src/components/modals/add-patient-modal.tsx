@@ -42,6 +42,8 @@ export default function AddPatientModal({ open, onOpenChange }: AddPatientModalP
     address: "",
     dateOfBirth: "",
     gender: "male",
+    bloodType: "",
+    emergencyContact: "",
   });
 
   const updateFormData = (field: keyof RegisterPatient, value: string) => {
@@ -207,6 +209,36 @@ export default function AddPatientModal({ open, onOpenChange }: AddPatientModalP
               rows={2}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="bloodType">Blood Type</Label>
+              <Select value={formData.bloodType} onValueChange={(value) => updateFormData("bloodType", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select blood type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A+">A+</SelectItem>
+                  <SelectItem value="A-">A-</SelectItem>
+                  <SelectItem value="B+">B+</SelectItem>
+                  <SelectItem value="B-">B-</SelectItem>
+                  <SelectItem value="AB+">AB+</SelectItem>
+                  <SelectItem value="AB-">AB-</SelectItem>
+                  <SelectItem value="O+">O+</SelectItem>
+                  <SelectItem value="O-">O-</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emergencyContact">Emergency Contact</Label>
+              <Input
+                id="emergencyContact"
+                value={formData.emergencyContact}
+                onChange={(e) => updateFormData("emergencyContact", e.target.value)}
+                placeholder="Emergency contact phone"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end space-x-2">

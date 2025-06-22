@@ -86,6 +86,8 @@ export const registerPatientSchema = z.object({
   address: z.string().min(5, "Address must be at least 5 characters"),
   dateOfBirth: z.string(),
   gender: z.enum(["male", "female", "other"]),
+  bloodType: z.string().optional(),
+  emergencyContact: z.string().optional(),
 });
 
 export const addDoctorSchema = z.object({

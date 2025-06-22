@@ -256,7 +256,7 @@ export default function PatientsPage() {
                           <Calendar className="w-4 h-4 mr-1" />
                           Schedule
                         </Button>
-                        {['admin', 'doctor', 'receptionist'].includes(user.role) && (
+                        {['admin', 'receptionist'].includes(user.role) && (
                           <Button 
                             variant="outline" 
                             size="sm"
