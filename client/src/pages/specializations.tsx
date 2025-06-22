@@ -40,12 +40,6 @@ export default function SpecializationsPage() {
     description: ""
   });
 
-  const { data: specializations, isLoading } = useQuery<Specialization[]>({
-    queryKey: ["/api/specializations"],
-    queryFn: () => apiRequest("GET", "/api/specializations"),
-    enabled: !!user && user.role === 'admin',
-  });
-
   // Only admin can access this page
   if (!user || user.role !== 'admin') {
     return (
@@ -59,6 +53,11 @@ export default function SpecializationsPage() {
       </div>
     );
   }
+
+  const { data: specializations, isLoading } = useQuery<Specialization[]>({
+    queryKey: ["/api/specializations"],
+    queryFn: () => apiRequest("GET", "/api/specializations"),
+  });
 
   const addMutation = useMutation({
     mutationFn: async (data: InsertSpecialization) => {

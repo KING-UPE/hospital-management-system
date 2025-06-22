@@ -1,4 +1,4 @@
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
@@ -67,24 +67,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {filteredMenuItems.map((item) => {
             const IconComponent = item.icon;
             return (
-              <Button
-                key={item.path}
-                variant={isActive(item.path) ? "secondary" : "ghost"}
-                className={`
-                  w-full justify-start text-left h-11
-                  ${isActive(item.path) 
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  }
-                `}
-                onClick={() => {
-                  window.location.href = item.path;
-                  onClose?.();
-                }}
-              >
-                <IconComponent className="w-4 h-4 mr-3" />
-                {item.label}
-              </Button>
+              <Link key={item.path} href={item.path}>
+                <Button
+                  variant={isActive(item.path) ? "secondary" : "ghost"}
+                  className={`
+                    w-full justify-start text-left h-11
+                    ${isActive(item.path) 
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground' 
+                      : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    }
+                  `}
+                  onClick={onClose}
+                >
+                  <IconComponent className="w-4 h-4 mr-3" />
+                  {item.label}
+                </Button>
+              </Link>
             );
           })}
         </nav>
