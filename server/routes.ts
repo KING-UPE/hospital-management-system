@@ -85,6 +85,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/patients/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updates = req.body;
+      const patient = await storage.updatePatient(id, updates);
+      
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+      
+      res.json(patient);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to update patient" });
+    }
+  });
+
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const updates = req.body;
+      const user = await storage.updateUser(id, updates);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json(user);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to update user" });
+    }
+  });
+
   // Doctor routes - Admin only
   app.get("/api/doctors", async (req, res) => {
     try {
