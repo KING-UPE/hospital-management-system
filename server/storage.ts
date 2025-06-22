@@ -451,13 +451,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteDoctor(id: string): Promise<boolean> {
-    const result = await db.delete(doctors).where(eq(doctors.id, id));
-    if (result.rowCount > 0) {
-      // Also delete the user record
-      await db.delete(users).where(eq(users.id, id));
-      return true;
+    try {
+      // First delete the doctor record
+      const doctorResult = await db
+        .delete(doctors)
+        .where(eq(doctors.id, id));
+      
+      // Then delete the user record  
+      const userResult = await db
+        .delete(users)
+        .where(eq(users.id, id));
+      
+      return doctorResult.rowCount > 0 && userResult.rowCount > 0;
+    } catch (error) {
+      console.error('Error deleting doctor:', error);
+      return false;
     }
-    return false;
   }
 
   async getPatient(id: string): Promise<Patient | undefined> {

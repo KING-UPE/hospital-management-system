@@ -315,6 +315,7 @@ export default function SpecializationsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleEdit(specialization)}
+                  className="hover:bg-primary hover:text-primary-foreground transition-colors"
                 >
                   <Edit className="w-4 h-4 mr-1" />
                   Edit
@@ -323,7 +324,7 @@ export default function SpecializationsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => handleDelete(specialization.id)}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
                 >
                   <Trash2 className="w-4 h-4 mr-1" />
                   Delete

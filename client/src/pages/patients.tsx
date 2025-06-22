@@ -93,10 +93,13 @@ export default function PatientsPage() {
                   Manage patient records and information
                 </p>
               </div>
-              <Button>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Patient
-              </Button>
+{/* Only Admin, Doctor, and Receptionist can add patients */}
+              {['admin', 'doctor', 'receptionist'].includes(user.role) && (
+                <Button>
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Add Patient
+                </Button>
+              )}
             </div>
 
             {/* Search and Filters */}
@@ -220,18 +223,44 @@ export default function PatientsPage() {
                       </div>
                       
                       <div className="flex space-x-2 pt-3">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                          onClick={() => {
+                            // TODO: Implement view patient functionality
+                            console.log('View patient:', patient.id);
+                          }}
+                        >
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="hover:bg-green-50 hover:text-green-600 transition-colors"
+                          onClick={() => {
+                            // TODO: Implement schedule appointment functionality
+                            console.log('Schedule for patient:', patient.id);
+                          }}
+                        >
                           <Calendar className="w-4 h-4 mr-1" />
                           Schedule
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
+                        {['admin', 'doctor', 'receptionist'].includes(user.role) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                            onClick={() => {
+                              // TODO: Implement edit patient functionality
+                              console.log('Edit patient:', patient.id);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

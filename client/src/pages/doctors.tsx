@@ -196,7 +196,15 @@ export default function DoctorsPage() {
                       </div>
                       
                       <div className="flex space-x-2 pt-3">
-                        <Button variant="outline" size="sm" className="flex-1">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => {
+                            // TODO: Implement edit doctor functionality
+                            console.log('Edit doctor:', doctor.id);
+                          }}
+                        >
                           <Edit className="w-4 h-4 mr-1" />
                           Edit
                         </Button>
@@ -204,7 +212,7 @@ export default function DoctorsPage() {
                           variant="outline" 
                           size="sm" 
                           onClick={() => handleDelete(doctor.id)}
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
