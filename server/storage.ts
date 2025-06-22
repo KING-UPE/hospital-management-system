@@ -90,6 +90,71 @@ export class MemStorage implements IStorage {
     };
     this.users.set(adminId, admin);
 
+    // Create sample doctor user
+    const doctorId = await this.generateUserId('doctor');
+    const doctor: User = {
+      id: doctorId,
+      firstName: 'Dr. John',
+      lastName: 'Smith',
+      email: 'doctor@hospital.com',
+      password: 'doctor123',
+      phone: '+1-555-0101',
+      address: '456 Medical Ave, Health City, HC 12346',
+      role: 'doctor',
+      status: 'active',
+      createdAt: new Date(),
+    };
+    this.users.set(doctorId, doctor);
+
+    // Create doctor profile
+    await this.createDoctor({
+      userId: doctorId,
+      specialization: 'cardiology',
+      licenseNumber: 'MD123456',
+      experience: 10,
+    });
+
+    // Create sample receptionist user
+    const receptionistId = await this.generateUserId('receptionist');
+    const receptionist: User = {
+      id: receptionistId,
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      email: 'receptionist@hospital.com',
+      password: 'receptionist123',
+      phone: '+1-555-0102',
+      address: '789 Front Desk Blvd, Reception City, RC 12347',
+      role: 'receptionist',
+      status: 'active',
+      createdAt: new Date(),
+    };
+    this.users.set(receptionistId, receptionist);
+
+    // Create sample patient user
+    const patientId = await this.generateUserId('patient');
+    const patient: User = {
+      id: patientId,
+      firstName: 'Michael',
+      lastName: 'Brown',
+      email: 'patient@hospital.com',
+      password: 'patient123',
+      phone: '+1-555-0103',
+      address: '321 Patient Lane, Care City, CC 12348',
+      role: 'patient',
+      status: 'active',
+      createdAt: new Date(),
+    };
+    this.users.set(patientId, patient);
+
+    // Create patient profile
+    await this.createPatient({
+      userId: patientId,
+      dateOfBirth: '1985-06-15',
+      gender: 'male',
+      emergencyContact: '+1-555-0199',
+      bloodType: 'O+',
+    });
+
     // Create default specializations
     const defaultSpecializations = [
       { name: 'Cardiology', description: 'Heart and cardiovascular system' },
@@ -135,6 +200,7 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id,
+      status: insertUser.status || 'active',
       createdAt: new Date(),
     };
     this.users.set(id, user);
@@ -156,7 +222,7 @@ export class MemStorage implements IStorage {
 
   async getDoctors(): Promise<DoctorWithUser[]> {
     const doctors: DoctorWithUser[] = [];
-    for (const doctor of this.doctors.values()) {
+    for (const doctor of Array.from(this.doctors.values())) {
       const user = await this.getUser(doctor.userId);
       if (user) {
         doctors.push({ ...doctor, user });
@@ -166,10 +232,11 @@ export class MemStorage implements IStorage {
   }
 
   async createDoctor(insertDoctor: InsertDoctor): Promise<Doctor> {
-    const id = insertDoctor.id;
+    const id = insertDoctor.userId;
     const doctor: Doctor = {
       ...insertDoctor,
       id,
+      experience: insertDoctor.experience || 0,
     };
     this.doctors.set(id, doctor);
     return doctor;
@@ -190,7 +257,7 @@ export class MemStorage implements IStorage {
 
   async getPatients(): Promise<PatientWithUser[]> {
     const patients: PatientWithUser[] = [];
-    for (const patient of this.patients.values()) {
+    for (const patient of Array.from(this.patients.values())) {
       const user = await this.getUser(patient.userId);
       if (user) {
         patients.push({ ...patient, user });
@@ -200,10 +267,12 @@ export class MemStorage implements IStorage {
   }
 
   async createPatient(insertPatient: InsertPatient): Promise<Patient> {
-    const id = insertPatient.id;
+    const id = insertPatient.userId;
     const patient: Patient = {
       ...insertPatient,
       id,
+      emergencyContact: insertPatient.emergencyContact || null,
+      bloodType: insertPatient.bloodType || null,
     };
     this.patients.set(id, patient);
     return patient;
@@ -224,7 +293,7 @@ export class MemStorage implements IStorage {
 
   async getAppointments(): Promise<AppointmentWithDetails[]> {
     const appointments: AppointmentWithDetails[] = [];
-    for (const appointment of this.appointments.values()) {
+    for (const appointment of Array.from(this.appointments.values())) {
       const patient = await this.getUser(appointment.patientId);
       const doctor = await this.getDoctor(appointment.doctorId);
       const doctorUser = doctor ? await this.getUser(doctor.userId) : undefined;
@@ -255,6 +324,10 @@ export class MemStorage implements IStorage {
     const appointment: Appointment = {
       ...insertAppointment,
       id,
+      status: insertAppointment.status || 'scheduled',
+      type: insertAppointment.type || 'consultation',
+      duration: insertAppointment.duration || 30,
+      notes: insertAppointment.notes || null,
       createdAt: new Date(),
     };
     this.appointments.set(id, appointment);
@@ -279,6 +352,7 @@ export class MemStorage implements IStorage {
     const specialization: Specialization = {
       ...insertSpecialization,
       id,
+      description: insertSpecialization.description || null,
     };
     this.specializations.set(id, specialization);
     return specialization;

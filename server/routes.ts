@@ -43,7 +43,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create patient record
       const patient = await storage.createPatient({
-        id: user.id,
         userId: user.id,
         dateOfBirth: patientData.dateOfBirth,
         gender: patientData.gender,
@@ -104,7 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create doctor record
       const doctor = await storage.createDoctor({
-        id: user.id,
         userId: user.id,
         specialization: doctorData.specialization,
         licenseNumber: doctorData.licenseNumber,
