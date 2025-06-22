@@ -181,23 +181,10 @@ export default function SpecializationsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-background">
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)} 
-        />
-        
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Navbar onMenuClick={() => setSidebarOpen(true)} />
-          
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading specializations...</p>
-              </div>
-            </div>
-          </main>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading specializations...</p>
         </div>
       </div>
     );
@@ -215,7 +202,6 @@ export default function SpecializationsPage() {
         
         <main className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
-            {/* Header */}
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight flex items-center">
@@ -227,124 +213,167 @@ export default function SpecializationsPage() {
                 </p>
               </div>
               <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={resetForm}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Specialization
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Specialization</DialogTitle>
-                    <DialogDescription>
-                      Create a new medical specialization that doctors can be assigned to.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder="e.g., Cardiology"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Brief description of the specialization"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="flex justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsAddModalOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleAdd}
-                        disabled={!formData.name.trim() || addMutation.isPending}
-                      >
-                        {addMutation.isPending ? "Adding..." : "Add Specialization"}
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
+          <DialogTrigger asChild>
+            <Button onClick={resetForm}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Specialization
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Specialization</DialogTitle>
+              <DialogDescription>
+                Create a new medical specialization that doctors can be assigned to.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., Cardiology"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Brief description of the specialization"
+                  rows={3}
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAdd}
+                  disabled={!formData.name.trim() || addMutation.isPending}
+                >
+                  {addMutation.isPending ? "Adding..." : "Add Specialization"}
+                </Button>
+              </div>
             </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-            {/* Specializations Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {specializations && specializations.length > 0 ? (
-                specializations.map((specialization) => (
-                  <Card key={specialization.id} className="group hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                            <Stethoscope className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg">
-                              {specialization.name}
-                            </CardTitle>
-                            <CardDescription>
-                              ID: <code className="text-xs">{specialization.id}</code>
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {specialization.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {specialization.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex space-x-2 pt-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 hover:bg-primary hover:text-primary-foreground transition-colors"
-                          onClick={() => handleEdit(specialization)}
-                        >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleDelete(specialization.id)}
-                          className="text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-12">
-                  <Stethoscope className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No specializations found</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Get started by adding your first medical specialization.
-                  </p>
-                  <Button onClick={() => setIsAddModalOpen(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Specialization
-                  </Button>
+      {/* Edit Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Specialization</DialogTitle>
+            <DialogDescription>
+              Update the specialization details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Name *</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="e.g., Cardiology"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-description">Description</Label>
+              <Textarea
+                id="edit-description"
+                value={formData.description}
+                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Brief description of the specialization"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={!formData.name.trim() || updateMutation.isPending}
+              >
+                {updateMutation.isPending ? "Updating..." : "Update Specialization"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {specializations?.map((specialization) => (
+          <Card key={specialization.id} className="group hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Stethoscope className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{specialization.name}</CardTitle>
+                    <CardDescription>
+                      ID: <code className="text-xs">{specialization.id}</code>
+                    </CardDescription>
+                  </div>
                 </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {specialization.description && (
+                <p className="text-sm text-muted-foreground">
+                  {specialization.description}
+                </p>
               )}
+              
+              <div className="flex justify-end space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleEdit(specialization)}
+                  className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDelete(specialization.id)}
+                  className="text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" />
+                  Delete
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )) || (
+          <div className="col-span-full text-center py-12">
+            <Stethoscope className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No specializations found</h3>
+            <p className="text-muted-foreground mb-4">
+              Get started by adding your first medical specialization.
+            </p>
+            <Button onClick={() => setIsAddModalOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Specialization
+            </Button>
+          </div>
+        )}
             </div>
 
             {/* Edit Modal */}
