@@ -19,6 +19,9 @@ import {
   Mail
 } from "lucide-react";
 import AddPatientModal from "@/components/modals/add-patient-modal";
+import ViewPatientModal from "@/components/modals/view-patient-modal";
+import EditPatientModal from "@/components/modals/edit-patient-modal";
+import AddAppointmentModal from "@/components/modals/add-appointment-modal";
 import type { PatientWithUser } from "@shared/schema";
 
 export default function PatientsPage() {
@@ -27,6 +30,10 @@ export default function PatientsPage() {
   const [ageFilter, setAgeFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState("all");
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [showViewPatientModal, setShowViewPatientModal] = useState(false);
+  const [showEditPatientModal, setShowEditPatientModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<PatientWithUser | null>(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -230,8 +237,8 @@ export default function PatientsPage() {
                           size="sm" 
                           className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
                           onClick={() => {
-                            // TODO: Implement view patient functionality
-                            console.log('View patient:', patient.id);
+                            setSelectedPatient(patient);
+                            setShowViewPatientModal(true);
                           }}
                         >
                           <Eye className="w-4 h-4 mr-1" />
@@ -242,8 +249,8 @@ export default function PatientsPage() {
                           size="sm"
                           className="hover:bg-green-50 hover:text-green-600 transition-colors"
                           onClick={() => {
-                            // TODO: Implement schedule appointment functionality
-                            console.log('Schedule for patient:', patient.id);
+                            setSelectedPatient(patient);
+                            setShowScheduleModal(true);
                           }}
                         >
                           <Calendar className="w-4 h-4 mr-1" />
@@ -255,8 +262,8 @@ export default function PatientsPage() {
                             size="sm"
                             className="hover:bg-primary hover:text-primary-foreground transition-colors"
                             onClick={() => {
-                              // TODO: Implement edit patient functionality
-                              console.log('Edit patient:', patient.id);
+                              setSelectedPatient(patient);
+                              setShowEditPatientModal(true);
                             }}
                           >
                             <Edit className="w-4 h-4 mr-1" />
@@ -276,6 +283,20 @@ export default function PatientsPage() {
       <AddPatientModal 
         open={showAddPatientModal} 
         onOpenChange={setShowAddPatientModal}
+      />
+      <ViewPatientModal 
+        open={showViewPatientModal} 
+        onOpenChange={setShowViewPatientModal}
+        patient={selectedPatient}
+      />
+      <EditPatientModal 
+        open={showEditPatientModal} 
+        onOpenChange={setShowEditPatientModal}
+        patient={selectedPatient}
+      />
+      <AddAppointmentModal 
+        open={showScheduleModal} 
+        onOpenChange={setShowScheduleModal}
       />
     </div>
   );
