@@ -450,6 +450,16 @@ export class DatabaseStorage implements IStorage {
     return doctor || undefined;
   }
 
+  async deleteDoctor(id: string): Promise<boolean> {
+    const result = await db.delete(doctors).where(eq(doctors.id, id));
+    if (result.rowCount > 0) {
+      // Also delete the user record
+      await db.delete(users).where(eq(users.id, id));
+      return true;
+    }
+    return false;
+  }
+
   async getPatient(id: string): Promise<Patient | undefined> {
     const [patient] = await db.select().from(patients).where(eq(patients.id, id));
     return patient || undefined;
@@ -576,6 +586,22 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return specialization;
+  }
+
+  async updateSpecialization(id: number, updates: Partial<InsertSpecialization>): Promise<Specialization | undefined> {
+    const [specialization] = await db
+      .update(specializations)
+      .set(updates)
+      .where(eq(specializations.id, id))
+      .returning();
+    return specialization || undefined;
+  }
+
+  async deleteSpecialization(id: number): Promise<boolean> {
+    const result = await db
+      .delete(specializations)
+      .where(eq(specializations.id, id));
+    return result.rowCount > 0;
   }
 
   async authenticateUser(userId: string, password: string): Promise<UserWithRole | undefined> {

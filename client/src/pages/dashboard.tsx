@@ -48,44 +48,65 @@ export default function DashboardPage() {
 
   if (!user) return null;
 
-  const statsCards = [
-    {
-      title: "Total Patients",
-      value: stats?.totalPatients || 0,
-      icon: Users,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-      change: "+12%",
-      changeText: "from last month"
-    },
-    {
-      title: "Active Doctors",
-      value: stats?.activeDoctors || 0,
-      icon: UserRound,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-      change: "+5%",
-      changeText: "from last month"
-    },
-    {
-      title: "Today's Appointments",
-      value: stats?.todayAppointments || 0,
-      icon: Calendar,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      change: "23 pending",
-      changeText: "need confirmation"
-    },
-    {
-      title: "Total Appointments",
-      value: stats?.totalAppointments || 0,
-      icon: DollarSign,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-      change: "+8%",
-      changeText: "from last month"
+  // Role-based stats cards
+  const getStatsCards = () => {
+    const baseCards = [
+      {
+        title: "Today's Appointments",
+        value: stats?.todayAppointments || 0,
+        icon: Calendar,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+        change: "23 pending",
+        changeText: "need confirmation",
+        roles: ["admin", "doctor", "receptionist", "patient"]
+      },
+      {
+        title: "Total Appointments",
+        value: stats?.totalAppointments || 0,
+        icon: DollarSign,
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+        change: "+8%",
+        changeText: "from last month",
+        roles: ["admin", "doctor", "receptionist"]
+      }
+    ];
+
+    // Admin and staff can see patient/doctor stats
+    if (["admin", "doctor", "receptionist"].includes(user.role)) {
+      baseCards.unshift(
+        {
+          title: "Total Patients",
+          value: stats?.totalPatients || 0,
+          icon: Users,
+          color: "text-blue-600",
+          bgColor: "bg-blue-50",
+          change: "+12%",
+          changeText: "from last month",
+          roles: ["admin", "doctor", "receptionist"]
+        }
+      );
     }
-  ];
+
+    // Only admin can see doctor management stats
+    if (user.role === "admin") {
+      baseCards.splice(1, 0, {
+        title: "Active Doctors",
+        value: stats?.activeDoctors || 0,
+        icon: UserRound,
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        change: "+5%",
+        changeText: "from last month",
+        roles: ["admin"]
+      });
+    }
+
+    return baseCards.filter(card => card.roles.includes(user.role));
+  };
+
+  const statsCards = getStatsCards();
 
   return (
     <div className="flex h-screen bg-background">

@@ -69,7 +69,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Doctor routes
+  // Doctor routes - Admin only
   app.get("/api/doctors", async (req, res) => {
     try {
       const doctors = await storage.getDoctors();
@@ -79,6 +79,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/doctors/:id", async (req, res) => {
+    try {
+      const doctorId = req.params.id;
+      const success = await storage.deleteDoctor(doctorId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Doctor not found" });
+      }
+      
+      res.json({ message: "Doctor deleted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to delete doctor" });
+    }
+  });
+
+  // Admin only
   app.post("/api/doctors", async (req, res) => {
     try {
       const doctorData = addDoctorSchema.parse(req.body);
@@ -115,7 +131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Patient routes
+  // Patient routes - Admin, Doctor, Receptionist only
   app.get("/api/patients", async (req, res) => {
     try {
       const patients = await storage.getPatients();
@@ -171,7 +187,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Specialization routes
+  // Specialization routes - Admin management, All can read
   app.get("/api/specializations", async (req, res) => {
     try {
       const specializations = await storage.getSpecializations();
@@ -181,6 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin only
   app.post("/api/specializations", async (req, res) => {
     try {
       const specializationData = insertSpecializationSchema.parse(req.body);
@@ -191,7 +208,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Reports endpoint
+  // Admin only
+  app.put("/api/specializations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertSpecializationSchema.partial().parse(req.body);
+      const specialization = await storage.updateSpecialization(id, updates);
+      
+      if (!specialization) {
+        return res.status(404).json({ message: "Specialization not found" });
+      }
+      
+      res.json(specialization);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to update specialization" });
+    }
+  });
+
+  // Admin only
+  app.delete("/api/specializations/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteSpecialization(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Specialization not found" });
+      }
+      
+      res.json({ message: "Specialization deleted successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message || "Failed to delete specialization" });
+    }
+  });
+
+  // Reports endpoint - Admin only
   app.get("/api/reports", async (req, res) => {
     try {
       const appointments = await storage.getAppointments();
