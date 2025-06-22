@@ -497,7 +497,12 @@ export class DatabaseStorage implements IStorage {
 
   async getAppointments(): Promise<AppointmentWithDetails[]> {
     const result = await db
-      .select()
+      .select({
+        appointment: appointments,
+        patient: patients,
+        patientUser: users,
+        doctor: doctors
+      })
       .from(appointments)
       .innerJoin(patients, eq(appointments.patientId, patients.id))
       .innerJoin(doctors, eq(appointments.doctorId, doctors.id))
@@ -509,14 +514,14 @@ export class DatabaseStorage implements IStorage {
       const doctorUser = await db
         .select()
         .from(users)
-        .where(eq(users.id, row.doctors.userId))
+        .where(eq(users.id, row.doctor.userId))
         .then(([user]) => user);
       
       if (doctorUser) {
         appointmentDetails.push({
-          ...row.appointments,
-          patient: row.users,
-          doctor: { ...doctorUser, doctorInfo: row.doctors }
+          ...row.appointment,
+          patient: row.patientUser,
+          doctor: { ...doctorUser, doctorInfo: row.doctor }
         });
       }
     }

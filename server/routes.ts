@@ -191,6 +191,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reports endpoint
+  app.get("/api/reports", async (req, res) => {
+    try {
+      const appointments = await storage.getAppointments();
+      const patients = await storage.getPatients();
+      const doctors = await storage.getDoctors();
+
+      // Calculate appointment statistics
+      const appointmentsByStatus = appointments.reduce((acc: Record<string, number>, apt) => {
+        acc[apt.status] = (acc[apt.status] || 0) + 1;
+        return acc;
+      }, {});
+
+      const appointmentsByDoctor = appointments.reduce((acc: Record<string, number>, apt) => {
+        const doctorName = `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}`;
+        acc[doctorName] = (acc[doctorName] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate patient demographics
+      const patientsByGender = patients.reduce((acc: Record<string, number>, patient) => {
+        acc[patient.gender] = (acc[patient.gender] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate age groups
+      const patientsByAge = patients.reduce((acc: Record<string, number>, patient) => {
+        const age = new Date().getFullYear() - new Date(patient.dateOfBirth).getFullYear();
+        let ageGroup = '60+';
+        if (age <= 18) ageGroup = '0-18';
+        else if (age <= 35) ageGroup = '19-35';
+        else if (age <= 60) ageGroup = '36-60';
+        
+        acc[ageGroup] = (acc[ageGroup] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Calculate doctor utilization
+      const doctorUtilization = doctors.map(doctor => {
+        const doctorAppointments = appointments.filter(apt => apt.doctorId === doctor.id);
+        const completedAppointments = doctorAppointments.filter(apt => apt.status === 'completed');
+        const utilizationRate = doctorAppointments.length > 0 
+          ? Math.round((completedAppointments.length / doctorAppointments.length) * 100)
+          : 0;
+
+        return {
+          doctorId: doctor.id,
+          doctorName: `Dr. ${doctor.user.firstName} ${doctor.user.lastName}`,
+          totalAppointments: doctorAppointments.length,
+          completedAppointments: completedAppointments.length,
+          utilizationRate
+        };
+      });
+
+      const reportData = {
+        totalAppointments: appointments.length,
+        appointmentsByStatus,
+        appointmentsByDoctor,
+        appointmentsByMonth: {}, // Could be calculated based on date ranges
+        patientDemographics: {
+          totalPatients: patients.length,
+          byGender: patientsByGender,
+          byAgeGroup: patientsByAge,
+        },
+        doctorUtilization
+      };
+
+      res.json(reportData);
+    } catch (error) {
+      console.error('Error generating reports:', error);
+      res.status(500).json({ error: 'Failed to generate reports' });
+    }
+  });
+
   // Dashboard stats
   app.get("/api/dashboard/stats", async (req, res) => {
     try {

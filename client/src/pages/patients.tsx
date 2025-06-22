@@ -23,8 +23,8 @@ import type { PatientWithUser } from "@shared/schema";
 export default function PatientsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [ageFilter, setAgeFilter] = useState("");
-  const [genderFilter, setGenderFilter] = useState("");
+  const [ageFilter, setAgeFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
   const { user } = useAuth();
 
   useEffect(() => {
@@ -57,13 +57,13 @@ export default function PatientsPage() {
       patient.user.phone.includes(searchTerm);
 
     const age = calculateAge(patient.dateOfBirth);
-    const matchesAge = !ageFilter || 
+    const matchesAge = !ageFilter || ageFilter === 'all' || 
       (ageFilter === "0-18" && age <= 18) ||
       (ageFilter === "19-35" && age >= 19 && age <= 35) ||
       (ageFilter === "36-60" && age >= 36 && age <= 60) ||
       (ageFilter === "60+" && age > 60);
 
-    const matchesGender = !genderFilter || patient.gender === genderFilter;
+    const matchesGender = !genderFilter || genderFilter === 'all' || patient.gender === genderFilter;
 
     return matchesSearch && matchesAge && matchesGender;
   }) || [];
@@ -117,7 +117,7 @@ export default function PatientsPage() {
                       <SelectValue placeholder="Age Range" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Ages</SelectItem>
+                      <SelectItem value="all">All Ages</SelectItem>
                       <SelectItem value="0-18">0-18 years</SelectItem>
                       <SelectItem value="19-35">19-35 years</SelectItem>
                       <SelectItem value="36-60">36-60 years</SelectItem>
@@ -129,7 +129,7 @@ export default function PatientsPage() {
                       <SelectValue placeholder="Gender" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Genders</SelectItem>
+                      <SelectItem value="all">All Genders</SelectItem>
                       <SelectItem value="male">Male</SelectItem>
                       <SelectItem value="female">Female</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
@@ -137,8 +137,8 @@ export default function PatientsPage() {
                   </Select>
                   <Button variant="outline" onClick={() => {
                     setSearchTerm("");
-                    setAgeFilter("");
-                    setGenderFilter("");
+                    setAgeFilter("all");
+                    setGenderFilter("all");
                   }}>
                     Clear Filters
                   </Button>

@@ -27,8 +27,8 @@ export default function AppointmentsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [doctorFilter, setDoctorFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [doctorFilter, setDoctorFilter] = useState("all");
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const { user } = useAuth();
 
@@ -68,8 +68,8 @@ export default function AppointmentsPage() {
       appointment.patientId.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesDate = !dateFilter || appointment.date === dateFilter;
-    const matchesStatus = !statusFilter || appointment.status === statusFilter;
-    const matchesDoctor = !doctorFilter || appointment.doctorId === doctorFilter;
+    const matchesStatus = !statusFilter || statusFilter === 'all' || appointment.status === statusFilter;
+    const matchesDoctor = !doctorFilter || doctorFilter === 'all' || appointment.doctorId === doctorFilter;
 
     return matchesSearch && matchesDate && matchesStatus && matchesDoctor;
   }) || [];
@@ -128,7 +128,7 @@ export default function AppointmentsPage() {
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Status</SelectItem>
+                      <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="scheduled">Scheduled</SelectItem>
                       <SelectItem value="confirmed">Confirmed</SelectItem>
                       <SelectItem value="in-progress">In Progress</SelectItem>
@@ -142,7 +142,7 @@ export default function AppointmentsPage() {
                         <SelectValue placeholder="All Doctors" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Doctors</SelectItem>
+                        <SelectItem value="all">All Doctors</SelectItem>
                         {doctors.map((doctor: any) => (
                           <SelectItem key={doctor.id} value={doctor.id}>
                             Dr. {doctor.user.firstName} {doctor.user.lastName}
@@ -154,8 +154,8 @@ export default function AppointmentsPage() {
                   <Button variant="outline" onClick={() => {
                     setSearchTerm("");
                     setDateFilter("");
-                    setStatusFilter("");
-                    setDoctorFilter("");
+                    setStatusFilter("all");
+                    setDoctorFilter("all");
                   }}>
                     Clear Filters
                   </Button>

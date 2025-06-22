@@ -11,6 +11,7 @@ import DoctorsPage from "./pages/doctors";
 import PatientsPage from "./pages/patients";
 import AppointmentsPage from "./pages/appointments";
 import ProfilePage from "./pages/profile";
+import ReportsPage from "./pages/reports";
 import NotFound from "./pages/not-found";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/doctors" component={DoctorsPage} />
       <Route path="/patients" component={PatientsPage} />
       <Route path="/appointments" component={AppointmentsPage} />
+      <Route path="/reports" component={ReportsPage} />
       <Route path="/profile" component={ProfilePage} />
       <Route component={NotFound} />
     </Switch>
