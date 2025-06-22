@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
 import ScheduleAppointmentModal from "@/components/modals/schedule-appointment-modal";
+import ViewAppointmentModal from "@/components/modals/view-appointment-modal";
+import EditAppointmentModal from "@/components/modals/edit-appointment-modal";
 import { 
   Calendar, 
   CalendarPlus, 
@@ -30,7 +34,12 @@ export default function AppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [doctorFilter, setDoctorFilter] = useState("all");
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<AppointmentWithDetails | null>(null);
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!user) {
@@ -43,10 +52,38 @@ export default function AppointmentsPage() {
     enabled: !!user,
   });
 
-  const { data: doctors } = useQuery({
+  const { data: doctors = [] } = useQuery({
     queryKey: ["/api/doctors"],
     enabled: !!user && ['admin', 'receptionist'].includes(user.role),
   });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (appointmentId: number) => {
+      return apiRequest("PATCH", `/api/appointments/${appointmentId}`, {
+        status: "cancelled"
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/appointments"] });
+      toast({
+        title: "Appointment cancelled",
+        description: "Appointment has been successfully cancelled.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cancel appointment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCancel = (appointment: AppointmentWithDetails) => {
+    if (confirm("Are you sure you want to cancel this appointment?")) {
+      cancelMutation.mutate(appointment.id);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,7 +173,7 @@ export default function AppointmentsPage() {
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  {doctors && (
+                  {Array.isArray(doctors) && doctors.length > 0 && (
                     <Select value={doctorFilter} onValueChange={setDoctorFilter}>
                       <SelectTrigger>
                         <SelectValue placeholder="All Doctors" />
@@ -241,18 +278,42 @@ export default function AppointmentsPage() {
                       )}
                       
                       <div className="flex space-x-2 pt-3">
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedAppointment(appointment);
+                            setShowViewModal(true);
+                          }}
+                        >
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="w-4 h-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
-                          <X className="w-4 h-4 mr-1" />
-                          Cancel
-                        </Button>
+                        {['admin', 'receptionist', 'doctor'].includes(user.role) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedAppointment(appointment);
+                              setShowEditModal(true);
+                            }}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                        )}
+                        {['admin', 'receptionist'].includes(user.role) && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleCancel(appointment)}
+                            disabled={cancelMutation.isPending || appointment.status === 'cancelled'}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Cancel
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -266,6 +327,18 @@ export default function AppointmentsPage() {
       <ScheduleAppointmentModal 
         open={showScheduleModal} 
         onOpenChange={setShowScheduleModal}
+      />
+      
+      <ViewAppointmentModal
+        open={showViewModal}
+        onOpenChange={setShowViewModal}
+        appointment={selectedAppointment}
+      />
+      
+      <EditAppointmentModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        appointment={selectedAppointment}
       />
     </div>
   );
