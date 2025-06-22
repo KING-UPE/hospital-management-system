@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
+import AddPatientModal from "@/components/modals/add-patient-modal";
+import AddAppointmentModal from "@/components/modals/add-appointment-modal";
 import { 
   Users, 
   UserRound, 
@@ -28,6 +30,8 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [showAddAppointmentModal, setShowAddAppointmentModal] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -226,21 +230,39 @@ export default function DashboardPage() {
                   <CardDescription>Common tasks</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full justify-start" variant="outline">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => setShowAddAppointmentModal(true)}
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     New Appointment
                   </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add Patient
-                  </Button>
+                  {['admin', 'doctor', 'receptionist'].includes(user.role) && (
+                    <Button 
+                      className="w-full justify-start" 
+                      variant="outline"
+                      onClick={() => setShowAddPatientModal(true)}
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Patient
+                    </Button>
+                  )}
                   {user.role === 'admin' && (
                     <>
-                      <Button className="w-full justify-start" variant="outline">
+                      <Button 
+                        className="w-full justify-start" 
+                        variant="outline"
+                        onClick={() => window.location.href = '/doctors'}
+                      >
                         <UserRound className="w-4 h-4 mr-2" />
                         Manage Doctors
                       </Button>
-                      <Button className="w-full justify-start" variant="outline">
+                      <Button 
+                        className="w-full justify-start" 
+                        variant="outline"
+                        onClick={() => window.location.href = '/reports'}
+                      >
                         <BarChart className="w-4 h-4 mr-2" />
                         View Reports
                       </Button>
@@ -252,6 +274,15 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      <AddPatientModal 
+        open={showAddPatientModal} 
+        onOpenChange={setShowAddPatientModal}
+      />
+      <AddAppointmentModal 
+        open={showAddAppointmentModal} 
+        onOpenChange={setShowAddAppointmentModal}
+      />
     </div>
   );
 }

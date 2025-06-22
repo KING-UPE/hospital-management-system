@@ -18,6 +18,7 @@ import {
   Phone,
   Mail
 } from "lucide-react";
+import AddPatientModal from "@/components/modals/add-patient-modal";
 import type { PatientWithUser } from "@shared/schema";
 
 export default function PatientsPage() {
@@ -25,6 +26,7 @@ export default function PatientsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [ageFilter, setAgeFilter] = useState("all");
   const [genderFilter, setGenderFilter] = useState("all");
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -95,7 +97,7 @@ export default function PatientsPage() {
               </div>
 {/* Only Admin, Doctor, and Receptionist can add patients */}
               {['admin', 'doctor', 'receptionist'].includes(user.role) && (
-                <Button>
+                <Button onClick={() => setShowAddPatientModal(true)}>
                   <UserPlus className="w-4 h-4 mr-2" />
                   Add Patient
                 </Button>
@@ -270,6 +272,11 @@ export default function PatientsPage() {
           </div>
         </main>
       </div>
+
+      <AddPatientModal 
+        open={showAddPatientModal} 
+        onOpenChange={setShowAddPatientModal}
+      />
     </div>
   );
 }
