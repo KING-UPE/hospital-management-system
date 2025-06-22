@@ -5,6 +5,8 @@ import {
   type Specialization, type InsertSpecialization, type UserWithRole,
   type AppointmentWithDetails, type DoctorWithUser, type PatientWithUser
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -374,4 +376,330 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database storage implementation
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const id = await this.generateUserId(insertUser.role);
+    const [user] = await db
+      .insert(users)
+      .values({
+        ...insertUser,
+        id,
+        status: insertUser.status || 'active',
+        createdAt: new Date(),
+      })
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: string, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async getDoctor(id: string): Promise<Doctor | undefined> {
+    const [doctor] = await db.select().from(doctors).where(eq(doctors.id, id));
+    return doctor || undefined;
+  }
+
+  async getDoctors(): Promise<DoctorWithUser[]> {
+    const result = await db
+      .select()
+      .from(doctors)
+      .innerJoin(users, eq(doctors.userId, users.id));
+    
+    return result.map(({ doctors: doctor, users: user }) => ({
+      ...doctor,
+      user,
+    }));
+  }
+
+  async createDoctor(insertDoctor: InsertDoctor): Promise<Doctor> {
+    const id = insertDoctor.userId;
+    const [doctor] = await db
+      .insert(doctors)
+      .values({
+        ...insertDoctor,
+        id,
+        experience: insertDoctor.experience || 0,
+      })
+      .returning();
+    return doctor;
+  }
+
+  async updateDoctor(id: string, updates: Partial<InsertDoctor>): Promise<Doctor | undefined> {
+    const [doctor] = await db
+      .update(doctors)
+      .set(updates)
+      .where(eq(doctors.id, id))
+      .returning();
+    return doctor || undefined;
+  }
+
+  async getPatient(id: string): Promise<Patient | undefined> {
+    const [patient] = await db.select().from(patients).where(eq(patients.id, id));
+    return patient || undefined;
+  }
+
+  async getPatients(): Promise<PatientWithUser[]> {
+    const result = await db
+      .select()
+      .from(patients)
+      .innerJoin(users, eq(patients.userId, users.id));
+    
+    return result.map(({ patients: patient, users: user }) => ({
+      ...patient,
+      user,
+    }));
+  }
+
+  async createPatient(insertPatient: InsertPatient): Promise<Patient> {
+    const id = insertPatient.userId;
+    const [patient] = await db
+      .insert(patients)
+      .values({
+        ...insertPatient,
+        id,
+        emergencyContact: insertPatient.emergencyContact || null,
+        bloodType: insertPatient.bloodType || null,
+      })
+      .returning();
+    return patient;
+  }
+
+  async updatePatient(id: string, updates: Partial<InsertPatient>): Promise<Patient | undefined> {
+    const [patient] = await db
+      .update(patients)
+      .set(updates)
+      .where(eq(patients.id, id))
+      .returning();
+    return patient || undefined;
+  }
+
+  async getAppointment(id: number): Promise<Appointment | undefined> {
+    const [appointment] = await db.select().from(appointments).where(eq(appointments.id, id));
+    return appointment || undefined;
+  }
+
+  async getAppointments(): Promise<AppointmentWithDetails[]> {
+    const result = await db
+      .select()
+      .from(appointments)
+      .innerJoin(patients, eq(appointments.patientId, patients.id))
+      .innerJoin(doctors, eq(appointments.doctorId, doctors.id))
+      .innerJoin(users, eq(patients.userId, users.id));
+
+    const appointmentDetails: AppointmentWithDetails[] = [];
+    
+    for (const row of result) {
+      const doctorUser = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, row.doctors.userId))
+        .then(([user]) => user);
+      
+      if (doctorUser) {
+        appointmentDetails.push({
+          ...row.appointments,
+          patient: row.users,
+          doctor: { ...doctorUser, doctorInfo: row.doctors }
+        });
+      }
+    }
+
+    return appointmentDetails;
+  }
+
+  async getAppointmentsByPatient(patientId: string): Promise<AppointmentWithDetails[]> {
+    const allAppointments = await this.getAppointments();
+    return allAppointments.filter(apt => apt.patientId === patientId);
+  }
+
+  async getAppointmentsByDoctor(doctorId: string): Promise<AppointmentWithDetails[]> {
+    const allAppointments = await this.getAppointments();
+    return allAppointments.filter(apt => apt.doctorId === doctorId);
+  }
+
+  async createAppointment(insertAppointment: InsertAppointment): Promise<Appointment> {
+    const [appointment] = await db
+      .insert(appointments)
+      .values({
+        ...insertAppointment,
+        status: insertAppointment.status || 'scheduled',
+        type: insertAppointment.type || 'consultation',
+        duration: insertAppointment.duration || 30,
+        notes: insertAppointment.notes || null,
+        createdAt: new Date(),
+      })
+      .returning();
+    return appointment;
+  }
+
+  async updateAppointment(id: number, updates: Partial<InsertAppointment>): Promise<Appointment | undefined> {
+    const [appointment] = await db
+      .update(appointments)
+      .set(updates)
+      .where(eq(appointments.id, id))
+      .returning();
+    return appointment || undefined;
+  }
+
+  async getSpecializations(): Promise<Specialization[]> {
+    return await db.select().from(specializations);
+  }
+
+  async createSpecialization(insertSpecialization: InsertSpecialization): Promise<Specialization> {
+    const [specialization] = await db
+      .insert(specializations)
+      .values({
+        ...insertSpecialization,
+        description: insertSpecialization.description || null,
+      })
+      .returning();
+    return specialization;
+  }
+
+  async authenticateUser(userId: string, password: string): Promise<UserWithRole | undefined> {
+    const user = await this.getUser(userId);
+    if (!user || user.password !== password) return undefined;
+
+    const userWithRole: UserWithRole = { ...user };
+
+    if (user.role === 'doctor') {
+      userWithRole.doctorInfo = await this.getDoctor(userId);
+    } else if (user.role === 'patient') {
+      userWithRole.patientInfo = await this.getPatient(userId);
+    }
+
+    return userWithRole;
+  }
+
+  async generateUserId(role: string): Promise<string> {
+    const prefixes = {
+      admin: 'ADM',
+      doctor: 'DOC',
+      receptionist: 'REC',
+      patient: 'PAT'
+    };
+
+    const prefix = prefixes[role as keyof typeof prefixes];
+    if (!prefix) throw new Error('Invalid role');
+
+    // Get the highest existing ID for this role
+    const result = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(sql`${users.id} LIKE ${prefix + '%'}`);
+
+    let maxNumber = 0;
+    for (const user of result) {
+      const numberPart = parseInt(user.id.substring(3));
+      if (numberPart > maxNumber) {
+        maxNumber = numberPart;
+      }
+    }
+
+    const newNumber = maxNumber + 1;
+    return `${prefix}${newNumber.toString().padStart(4, '0')}`;
+  }
+
+  async initializeDefaults() {
+    // Check if data already exists
+    const existingUsers = await db.select().from(users);
+    if (existingUsers.length > 0) return;
+
+    // Create default admin user
+    const adminId = await this.generateUserId('admin');
+    const admin = await this.createUser({
+      firstName: 'Admin',
+      lastName: 'User',
+      email: 'admin@hospital.com',
+      password: 'admin123',
+      phone: '+1-555-0100',
+      address: '123 Hospital St, Medical City, MC 12345',
+      role: 'admin',
+      status: 'active'
+    });
+
+    // Create sample doctor user
+    const doctorUser = await this.createUser({
+      firstName: 'Dr. John',
+      lastName: 'Smith',
+      email: 'doctor@hospital.com',
+      password: 'doctor123',
+      phone: '+1-555-0101',
+      address: '456 Medical Ave, Health City, HC 12346',
+      role: 'doctor',
+      status: 'active'
+    });
+
+    await this.createDoctor({
+      userId: doctorUser.id,
+      specialization: 'cardiology',
+      licenseNumber: 'MD123456',
+      experience: 10,
+    });
+
+    // Create sample receptionist user
+    await this.createUser({
+      firstName: 'Sarah',
+      lastName: 'Johnson',
+      email: 'receptionist@hospital.com',
+      password: 'receptionist123',
+      phone: '+1-555-0102',
+      address: '789 Front Desk Blvd, Reception City, RC 12347',
+      role: 'receptionist',
+      status: 'active'
+    });
+
+    // Create sample patient user
+    const patientUser = await this.createUser({
+      firstName: 'Michael',
+      lastName: 'Brown',
+      email: 'patient@hospital.com',
+      password: 'patient123',
+      phone: '+1-555-0103',
+      address: '321 Patient Lane, Care City, CC 12348',
+      role: 'patient',
+      status: 'active'
+    });
+
+    await this.createPatient({
+      userId: patientUser.id,
+      dateOfBirth: '1985-06-15',
+      gender: 'male',
+      emergencyContact: '+1-555-0199',
+      bloodType: 'O+',
+    });
+
+    // Create default specializations
+    const defaultSpecializations = [
+      { name: 'Cardiology', description: 'Heart and cardiovascular system' },
+      { name: 'Neurology', description: 'Brain and nervous system' },
+      { name: 'Orthopedics', description: 'Bones, joints, and muscles' },
+      { name: 'Pediatrics', description: 'Children and adolescents' },
+      { name: 'Dermatology', description: 'Skin, hair, and nails' },
+      { name: 'Psychiatry', description: 'Mental health and disorders' },
+    ];
+
+    for (const spec of defaultSpecializations) {
+      await this.createSpecialization(spec);
+    }
+  }
+}
+
+export const storage = new DatabaseStorage();

@@ -18,9 +18,9 @@ This is a full-stack hospital management system built with Express.js and React.
 ### Backend Architecture
 - **Framework**: Express.js with TypeScript
 - **API Design**: RESTful API with JSON responses
-- **Database**: PostgreSQL with Drizzle ORM
-- **Database Provider**: Neon Database (@neondatabase/serverless)
-- **Session Management**: In-memory storage with potential for PostgreSQL session store
+- **Database**: PostgreSQL with Drizzle ORM (Converted from in-memory to persistent storage)
+- **Database Provider**: Replit PostgreSQL with @neondatabase/serverless driver
+- **Session Management**: Database-backed user authentication and session management
 - **Development Setup**: Development server with hot module replacement via Vite
 
 ### Database Schema
@@ -132,7 +132,12 @@ The system uses a relational database structure with the following main entities
 
 ```
 Changelog:
-- June 22, 2025. Initial setup
+- June 22, 2025. Initial setup with in-memory storage
+- June 22, 2025. Converted to PostgreSQL database with persistent storage
+  - Implemented DatabaseStorage class replacing MemStorage
+  - Added database relations and schema migrations
+  - Initialized database with default users for all roles
+  - All data now persists across application restarts
 ```
 
 ## User Preferences

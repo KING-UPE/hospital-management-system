@@ -152,7 +152,7 @@ export default function AddDoctorModal({ open, onOpenChange }: AddDoctorModalPro
                 </SelectTrigger>
                 <SelectContent>
                   {specializations?.map((spec: any) => (
-                    <SelectItem key={spec.id} value={spec.name.toLowerCase()}>
+                    <SelectItem key={spec.id} value={spec.name}>
                       {spec.name}
                     </SelectItem>
                   ))}

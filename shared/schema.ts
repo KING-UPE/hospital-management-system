@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -138,3 +139,42 @@ export type DoctorWithUser = Doctor & {
 export type PatientWithUser = Patient & {
   user: User;
 };
+
+// Database relations
+export const usersRelations = relations(users, ({ one }) => ({
+  doctorInfo: one(doctors, {
+    fields: [users.id],
+    references: [doctors.userId],
+  }),
+  patientInfo: one(patients, {
+    fields: [users.id],
+    references: [patients.userId],
+  }),
+}));
+
+export const doctorsRelations = relations(doctors, ({ one, many }) => ({
+  user: one(users, {
+    fields: [doctors.userId],
+    references: [users.id],
+  }),
+  appointments: many(appointments),
+}));
+
+export const patientsRelations = relations(patients, ({ one, many }) => ({
+  user: one(users, {
+    fields: [patients.userId],
+    references: [users.id],
+  }),
+  appointments: many(appointments),
+}));
+
+export const appointmentsRelations = relations(appointments, ({ one }) => ({
+  patient: one(patients, {
+    fields: [appointments.patientId],
+    references: [patients.id],
+  }),
+  doctor: one(doctors, {
+    fields: [appointments.doctorId],
+    references: [doctors.id],
+  }),
+}));
