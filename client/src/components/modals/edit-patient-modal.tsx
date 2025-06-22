@@ -219,7 +219,7 @@ export default function EditPatientModal({ open, onOpenChange, patient }: EditPa
                   <SelectValue placeholder="Select blood type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Not specified</SelectItem>
+                  <SelectItem value="none">Not specified</SelectItem>
                   <SelectItem value="A+">A+</SelectItem>
                   <SelectItem value="A-">A-</SelectItem>
                   <SelectItem value="B+">B+</SelectItem>
