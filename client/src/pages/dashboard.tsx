@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAddPatientModal, setShowAddPatientModal] = useState(false);
   const [showAddAppointmentModal, setShowAddAppointmentModal] = useState(false);
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function DashboardPage() {
     enabled: !!user,
   });
 
-  const { data: recentAppointments } = useQuery({
+  const { data: recentAppointments = [] } = useQuery({
     queryKey: ["/api/appointments"],
     enabled: !!user,
   });
@@ -185,40 +187,54 @@ export default function DashboardPage() {
                     <CardTitle>Recent Appointments</CardTitle>
                     <CardDescription>Latest appointment bookings</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => window.location.href = "/appointments"}>
+                  <Button variant="outline" size="sm" onClick={() => setLocation("/appointments")}>
                     <Eye className="w-4 h-4 mr-2" />
                     View All
                   </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {recentAppointments?.slice(0, 5).map((appointment: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                            <Users className="w-5 h-5 text-primary" />
+                    {Array.isArray(recentAppointments) && recentAppointments.length > 0 ? (
+                      recentAppointments.slice(0, 5).map((appointment: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                              <Users className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                {appointment.patient?.firstName} {appointment.patient?.lastName}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                with {appointment.doctor?.firstName} {appointment.doctor?.lastName}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium">
-                              {appointment.patient?.firstName} {appointment.patient?.lastName}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              with {appointment.doctor?.firstName} {appointment.doctor?.lastName}
-                            </p>
+                          <div className="text-right">
+                            <p className="text-sm font-medium">{appointment.time}</p>
+                            <Badge variant={
+                              appointment.status === 'confirmed' ? 'default' :
+                              appointment.status === 'pending' ? 'secondary' :
+                              'outline'
+                            }>
+                              {appointment.status}
+                            </Badge>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{appointment.time}</p>
-                          <Badge variant={
-                            appointment.status === 'confirmed' ? 'default' :
-                            appointment.status === 'pending' ? 'secondary' :
-                            'outline'
-                          }>
-                            {appointment.status}
-                          </Badge>
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8">
+                        <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No appointments yet</h3>
+                        <p className="text-muted-foreground mb-4">
+                          Schedule your first appointment to get started with patient care.
+                        </p>
+                        <Button onClick={() => setShowAddAppointmentModal(true)} size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Schedule Appointment
+                        </Button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>
