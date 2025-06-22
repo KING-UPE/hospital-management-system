@@ -10,12 +10,15 @@ import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
 import AddDoctorModal from "@/components/modals/add-doctor-modal";
+import EditDoctorModal from "@/components/modals/edit-doctor-modal";
+import ViewDoctorModal from "@/components/modals/view-doctor-modal";
 import { 
   UserRound, 
   Plus, 
   Search, 
   Edit, 
   Trash2,
+  Eye,
   Phone,
   Mail
 } from "lucide-react";
@@ -25,6 +28,9 @@ export default function DoctorsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedDoctor, setSelectedDoctor] = useState<DoctorWithUser | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -188,7 +194,7 @@ export default function DoctorsPage() {
                           <Mail className="w-4 h-4 mr-2" />
                           {doctor.user.email}
                         </div>
-                        {doctor.experience > 0 && (
+                        {(doctor.experience ?? 0) > 0 && (
                           <div className="text-muted-foreground">
                             {doctor.experience} years experience
                           </div>
@@ -199,10 +205,22 @@ export default function DoctorsPage() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="flex-1 hover:bg-primary hover:text-primary-foreground transition-colors"
+                          className="hover:bg-blue-50 hover:text-blue-600 transition-colors"
                           onClick={() => {
-                            // TODO: Implement edit doctor functionality
-                            console.log('Edit doctor:', doctor.id);
+                            setSelectedDoctor(doctor);
+                            setShowViewModal(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="hover:bg-primary hover:text-primary-foreground transition-colors"
+                          onClick={() => {
+                            setSelectedDoctor(doctor);
+                            setShowEditModal(true);
                           }}
                         >
                           <Edit className="w-4 h-4 mr-1" />
@@ -229,6 +247,16 @@ export default function DoctorsPage() {
       <AddDoctorModal 
         open={showAddModal} 
         onOpenChange={setShowAddModal}
+      />
+      <EditDoctorModal 
+        open={showEditModal} 
+        onOpenChange={setShowEditModal}
+        doctor={selectedDoctor}
+      />
+      <ViewDoctorModal 
+        open={showViewModal} 
+        onOpenChange={setShowViewModal}
+        doctor={selectedDoctor}
       />
     </div>
   );
