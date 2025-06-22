@@ -109,26 +109,34 @@ export default function ProfilePage() {
                         ID: {user.id}
                       </Badge>
                     </div>
-                    <div className="border-t pt-4">
-                      <div className="grid grid-cols-1 gap-4 text-center">
-                        <div>
-                          <p className="text-2xl font-bold">5+</p>
-                          <p className="text-sm text-muted-foreground">Years Experience</p>
+                    {(user.role === 'doctor' || user.role === 'admin') && (
+                      <div className="border-t pt-4">
+                        <div className="grid grid-cols-1 gap-4 text-center">
+                          {user.role === 'doctor' && user.doctorInfo && (
+                            <div>
+                              <p className="text-2xl font-bold">{user.doctorInfo.experience || 0}+</p>
+                              <p className="text-sm text-muted-foreground">Years Experience</p>
+                            </div>
+                          )}
+                          {user.role === 'admin' && (
+                            <>
+                              <div>
+                                <p className="text-2xl font-bold">5+</p>
+                                <p className="text-sm text-muted-foreground">Years Experience</p>
+                              </div>
+                              <div>
+                                <p className="text-2xl font-bold">1,247</p>
+                                <p className="text-sm text-muted-foreground">Patients Managed</p>
+                              </div>
+                              <div>
+                                <p className="text-2xl font-bold">47</p>
+                                <p className="text-sm text-muted-foreground">Doctors</p>
+                              </div>
+                            </>
+                          )}
                         </div>
-                        {user.role === 'admin' && (
-                          <>
-                            <div>
-                              <p className="text-2xl font-bold">1,247</p>
-                              <p className="text-sm text-muted-foreground">Patients Managed</p>
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold">47</p>
-                              <p className="text-sm text-muted-foreground">Doctors</p>
-                            </div>
-                          </>
-                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
