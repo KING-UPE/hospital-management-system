@@ -185,7 +185,7 @@ export default function DashboardPage() {
                     <CardTitle>Recent Appointments</CardTitle>
                     <CardDescription>Latest appointment bookings</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = "/appointments"}>
                     <Eye className="w-4 h-4 mr-2" />
                     View All
                   </Button>
